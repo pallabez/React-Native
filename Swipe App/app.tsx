@@ -2,6 +2,7 @@ import React from 'react';
 import { FlatList, Text, View, StatusBar, StyleSheet, SafeAreaView, Alert } from 'react-native';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
+import { useState } from 'react';
 
 const DATA = [
   {
@@ -38,21 +39,34 @@ const rightAction = () => {
   )
 }
 
-const Item: React.FC<{title: String, index: Number}> = ({ title, index }) => (
-  <Swipeable
-    renderRightActions={rightAction}
-  >
-    <View style={styles.item}>
-      <Text style={styles.title}>{title}</Text>
-    </View>
-  </Swipeable>
-);
+
+
+const Item: React.FC<{title: String, id: String, deleteItem:Function}> = ({ title, id, deleteItem}) => {
+  return (
+    <Swipeable
+      renderRightActions={rightAction}
+      onSwipeableRightOpen={() => deleteItem(id)}
+    >
+      <View style={styles.item}>
+        <Text style={styles.title}>{title}</Text>
+      </View>
+    </Swipeable>
+  );
+}
 
 const App: React.FC<{}> = () => {
-  const renderItem: React.FC<{item : {title: String}, index: Number}> = ({ item, index }) => (
+  const [data, setData] = useState(DATA);
+
+  const deleteItem = (currId:string) => {
+    const temp = data.filter(item => item.id !== currId);
+    setData(temp);
+  }
+
+  const renderItem: React.FC<{item : {id: String, title: String}}> = ({item}) => (
     <Item 
       title={item.title}
-      index={index}
+      id={item.id}
+      deleteItem={deleteItem}
     />
   );
 
@@ -60,7 +74,7 @@ const App: React.FC<{}> = () => {
     <SafeAreaView style={styles.container}>
       <GestureHandlerRootView>
       <FlatList
-        data={DATA}
+        data={data}
         renderItem={renderItem}
         keyExtractor={item => item.id}
       />
@@ -68,3 +82,19 @@ const App: React.FC<{}> = () => {
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 2,
+    marginTop: StatusBar.currentHeight || 0,
+  },
+  item: {
+    padding: 20,
+    backgroundColor: 'white',
+  },
+  title: {
+    fontSize: 32,
+  },
+});
+
+export default App;
